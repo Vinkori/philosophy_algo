@@ -2,17 +2,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <time.h>
+#include <locale.h>
 
 // Кількість філософів (і виделок)
 #define N 5 
 
 pthread_mutex_t forks[N];
 
-typedef struct {
+typedef struct 
+{
     int id;
 } PhilosopherArgs;
 
-void* philosopher_routine(void* arg) {
+void* philosopher_routine(void* arg) 
+{
     PhilosopherArgs* args = (PhilosopherArgs*)arg;
     int id = args->id;
 
@@ -25,14 +29,15 @@ void* philosopher_routine(void* arg) {
     int first_fork = (left_fork < right_fork) ? left_fork : right_fork;
     int second_fork = (left_fork > right_fork) ? left_fork : right_fork;
 
-    while (1) {
+    while (1) 
+    {
         printf("Філософ %d розмірковує...\n", id);
         // Спить випадковий час від 0.5 до 1.5 секунди
         usleep(500000 + (rand_r(&seed) % 1000000));
 
         printf("Філософ %d зголоднів. Намагається взяти виделку %d.\n", id, first_fork);
 
-        // Беремо виднлку 1 з меньшим індексом
+        // Беремо виднлку першу з меньшим індексом
         pthread_mutex_lock(&forks[first_fork]);
         printf("Філософ %d ВЗЯВ першу виделку %d.\n", id, first_fork);
 
@@ -53,20 +58,22 @@ void* philosopher_routine(void* arg) {
     return NULL;
 }
 
-int main() {
+int main() 
+{
+    setlocale(LC_ALL, "");
     pthread_t philosophers[N];
     PhilosopherArgs args[N];
 
-    // Ініціалізуємо м'ютекси
-    for (int i = 0; i < N; i++) {
+    for (int i = 0; i < N; i++) 
+    {
         if (pthread_mutex_init(&forks[i], NULL) != 0) {
             fprintf(stderr, "Помилка ініціалізації м'ютекса для виделки %d\n", i);
             return 1;
         }
     }
 
-    // Створюємо потоки
-    for (int i = 0; i < N; i++) {
+    for (int i = 0; i < N; i++) 
+    {
         args[i].id = i;
         if (pthread_create(&philosophers[i], NULL, philosopher_routine, &args[i]) != 0) {
             fprintf(stderr, "Помилка створення потоку для філософа %d\n", i);
